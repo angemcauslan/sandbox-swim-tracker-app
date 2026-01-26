@@ -340,40 +340,66 @@ const SwimTracker = () => {
     ],
     'Adult 1': [
       { id: 'a1-1', name: 'Enter and exit shallow water', category: 'Entries and Exits' },
-      { id: 'a1-2', name: 'Submerge face', category: 'Underwater Skills' },
-      { id: 'a1-3', name: 'Exhale underwater', category: 'Underwater Skills' },
-      { id: 'a1-4', name: 'Float on front (5 sec.)', category: 'Movement / Swimming Skills' },
-      { id: 'a1-5', name: 'Float on back (5 sec.)', category: 'Movement / Swimming Skills' },
-      { id: 'a1-6', name: 'Glide on front (5 m)', category: 'Movement / Swimming Skills' },
-      { id: 'a1-7', name: 'Glide on back (5 m)', category: 'Movement / Swimming Skills' },
-      { id: 'a1-8', name: 'Front swim (10 m)', category: 'Movement / Swimming Skills' },
-      { id: 'a1-9', name: 'Back swim (10 m)', category: 'Movement / Swimming Skills' },
-      { id: 'a1-10', name: 'Tread water (15 sec.)', category: 'Movement / Swimming Skills' },
-      { id: 'a1-11', name: 'Water Smart messages', category: 'Water Smart Education' }
+      { id: 'a1-2', name: 'Jump into deep water, return and exit', category: 'Entries and Exits' },
+      { id: 'a1-3', name: 'Sideways entry wearing PFD', category: 'Entries and Exits' },
+      { id: 'a1-4', name: 'Tread water 30 sec. wearing PFD', category: 'Surface Support' },
+      { id: 'a1-5', name: 'Hold breath underwater 5–10 sec.', category: 'Underwater Skills' },
+      { id: 'a1-6', name: 'Submerge and exhale 5–10 times', category: 'Underwater Skills' },
+      { id: 'a1-7', name: 'Open eyes underwater', category: 'Underwater Skills' },
+      { id: 'a1-8', name: 'Recover object from bottom in chest-deep water', category: 'Underwater Skills' },
+      { id: 'a1-9', name: 'Wearing PFD, jump into deep water, tread 30 sec. and swim/kick on back 5–10 m', category: 'Swim to Survive Skills' },
+      { id: 'a1-10', name: 'Float on front', category: 'Movement / Swimming Skills' },
+      { id: 'a1-11', name: 'Float on back', category: 'Movement / Swimming Skills' },
+      { id: 'a1-12', name: 'Roll laterally front to back and back to front', category: 'Movement / Swimming Skills' },
+      { id: 'a1-13', name: 'Glide on front 3–5 m', category: 'Movement / Swimming Skills' },
+      { id: 'a1-14', name: 'Glide on back 3–5 m', category: 'Movement / Swimming Skills' },
+      { id: 'a1-15', name: 'Glide on side 3–5 m', category: 'Movement / Swimming Skills' },
+      { id: 'a1-16', name: 'Flutter kick on front 10–15 m', category: 'Movement / Swimming Skills' },
+      { id: 'a1-17', name: 'Flutter kick on back 10–15 m', category: 'Movement / Swimming Skills' },
+      { id: 'a1-18', name: 'Flutter kick on side 10–15 m', category: 'Movement / Swimming Skills' },
+      { id: 'a1-19', name: 'Whip kick in vertical position with PFD 15–30 sec.', category: 'Movement / Swimming Skills' },
+      { id: 'a1-20', name: 'Front crawl or back crawl 10–15 m', category: 'Movement / Swimming Skills' },
+      { id: 'a1-21', name: 'Interval training: 4 x 9–12 m flutter kick with 10–15 sec. rests', category: 'Fitness' },
+      { id: 'a1-22', name: 'Water Smart messages', category: 'Water Smart Education' }
     ],
     'Adult 2': [
-      { id: 'a2-1', name: 'Jump into deep water', category: 'Entries and Exits' },
-      { id: 'a2-2', name: 'Submerge and exhale (10 sec.)', category: 'Underwater Skills' },
-      { id: 'a2-3', name: 'Recover object in deep water', category: 'Underwater Skills' },
-      { id: 'a2-4', name: 'Front swim (25 m)', category: 'Movement / Swimming Skills' },
-      { id: 'a2-5', name: 'Back swim (25 m)', category: 'Movement / Swimming Skills' },
-      { id: 'a2-6', name: 'Front crawl (15 m)', category: 'Movement / Swimming Skills' },
-      { id: 'a2-7', name: 'Back crawl (15 m)', category: 'Movement / Swimming Skills' },
-      { id: 'a2-8', name: 'Tread water (1 min.)', category: 'Movement / Swimming Skills' },
-      { id: 'a2-9', name: 'Swim underwater (5 m)', category: 'Underwater Skills' },
-      { id: 'a2-10', name: 'Water Smart messages', category: 'Water Smart Education' }
+      { id: 'a2-1', name: 'Standing dive into deep water', category: 'Entries and Exits' },
+      { id: 'a2-2', name: 'Forward roll entry into deep water with PFD', category: 'Entries and Exits' },
+      { id: 'a2-3', name: 'Forward roll entry into deep water without PFD', category: 'Entries and Exits' },
+      { id: 'a2-4', name: 'Tuck jump (cannonball) into deep water', category: 'Entries and Exits' },
+      { id: 'a2-5', name: 'Tread water 1–2 min.', category: 'Surface Support' },
+      { id: 'a2-6', name: 'Handstand in shallow water', category: 'Underwater Skills' },
+      { id: 'a2-7', name: 'Front somersault (in water)', category: 'Underwater Skills' },
+      { id: 'a2-8', name: 'Swim underwater 5–10 m', category: 'Underwater Skills' },
+      { id: 'a2-9', name: 'Canadian Swim to Survive Standard: Roll entry into deep water, tread 1 min. and swim 50 m', category: 'Swim to Survive Skills' },
+      { id: 'a2-10', name: 'Flutter kick on back 5 m; reverse direction and flutter kick on front 5 m', category: 'Movement / Swimming Skills' },
+      { id: 'a2-11', name: 'Flutter kick on front 5 m; reverse direction and flutter kick on back 5 m', category: 'Movement / Swimming Skills' },
+      { id: 'a2-12', name: 'Whip kick on back 10–15 m', category: 'Movement / Swimming Skills' },
+      { id: 'a2-13', name: 'Whip kick on front 10–15 m', category: 'Movement / Swimming Skills' },
+      { id: 'a2-14', name: 'Breaststroke arms drill 10–15 m', category: 'Movement / Swimming Skills' },
+      { id: 'a2-15', name: 'Front crawl 25–50 m', category: 'Movement / Swimming Skills' },
+      { id: 'a2-16', name: 'Back crawl 25–50 m', category: 'Movement / Swimming Skills' },
+      { id: 'a2-17', name: 'Interval training: 4 x 25 m flutter kick with 15–20 sec. rests', category: 'Fitness' },
+      { id: 'a2-18', name: 'Interval training: 4 x 25 m front or back crawl with 15–20 sec. rests', category: 'Fitness' },
+      { id: 'a2-19', name: 'Sprint front crawl 25 m', category: 'Fitness' },
+      { id: 'a2-20', name: 'Water Smart messages', category: 'Water Smart Education' }
     ],
     'Adult 3': [
-      { id: 'a3-1', name: 'Stride entry', category: 'Entries and Exits' },
-      { id: 'a3-2', name: 'Submerge and exhale (15 sec.)', category: 'Underwater Skills' },
-      { id: 'a3-3', name: 'Front crawl (50 m)', category: 'Movement / Swimming Skills' },
-      { id: 'a3-4', name: 'Back crawl (50 m)', category: 'Movement / Swimming Skills' },
-      { id: 'a3-5', name: 'Breaststroke (25 m)', category: 'Movement / Swimming Skills' },
-      { id: 'a3-6', name: 'Elementary backstroke (25 m)', category: 'Movement / Swimming Skills' },
-      { id: 'a3-7', name: 'Tread water (2 min.)', category: 'Movement / Swimming Skills' },
-      { id: 'a3-8', name: 'Swim underwater (10 m)', category: 'Underwater Skills' },
-      { id: 'a3-9', name: 'Surface dive', category: 'Underwater Skills' },
-      { id: 'a3-10', name: 'Water Smart messages', category: 'Water Smart Education' }
+      { id: 'a3-1', name: 'Shallow dive into deep water', category: 'Entries and Exits' },
+      { id: 'a3-2', name: 'Stride entry into deep water', category: 'Entries and Exits' },
+      { id: 'a3-3', name: 'Compact jump into deep water', category: 'Entries and Exits' },
+      { id: 'a3-4', name: 'Legs-only surface support 30–60 sec.', category: 'Surface Support' },
+      { id: 'a3-5', name: 'Back somersault (in water)', category: 'Underwater Skills' },
+      { id: 'a3-6', name: 'Swim underwater 5–10 m to recover object', category: 'Underwater Skills' },
+      { id: 'a3-7', name: 'Eggbeater kick on back or scissor kick on side 10–15 m', category: 'Movement / Swimming Skills' },
+      { id: 'a3-8', name: 'Breaststroke 25–50 m', category: 'Movement / Swimming Skills' },
+      { id: 'a3-9', name: 'Front crawl 50–100 m', category: 'Movement / Swimming Skills' },
+      { id: 'a3-10', name: 'Back crawl 50–100 m', category: 'Movement / Swimming Skills' },
+      { id: 'a3-11', name: 'Head-up front crawl 10–15 m', category: 'Movement / Swimming Skills' },
+      { id: 'a3-12', name: 'Interval training: 4 x 50 m front or back crawl or breaststroke with 30 sec. rests', category: 'Fitness' },
+      { id: 'a3-13', name: 'Sprint (25–50 m) front crawl, back crawl, or breaststroke', category: 'Fitness' },
+      { id: 'a3-14', name: 'Workout 300 m', category: 'Fitness' },
+      { id: 'a3-15', name: 'Water Smart messages', category: 'Water Smart Education' }
     ],
     'Fitness': [
       { id: 'fit-1', name: 'Continuous swimming (300 m)', category: 'Fitness' },
@@ -1269,12 +1295,26 @@ const SwimTracker = () => {
                                                       />
                                                     </div>
                                                   </div>
-                                                  {student.generalComments && (
-                                                    <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                                                      <p className="text-xs font-semibold text-amber-900 mb-1">General Comments:</p>
-                                                      <p className="text-sm text-amber-800">{student.generalComments}</p>
-                                                    </div>
-                                                  )}
+                                                  <div className="mt-3">
+                                                    <label className="block text-xs font-semibold text-slate-700 mb-1">General Comments:</label>
+                                                    <textarea
+                                                      value={student.generalComments || ''}
+                                                      onChange={(e) => {
+                                                        setStudents(students.map(s => {
+                                                          if (s.id === student.id) {
+                                                            return {
+                                                              ...s,
+                                                              generalComments: e.target.value
+                                                            };
+                                                          }
+                                                          return s;
+                                                        }));
+                                                      }}
+                                                      placeholder="Add general notes about this student..."
+                                                      className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition resize-none bg-white"
+                                                      rows="3"
+                                                    />
+                                                  </div>
                                                 </div>
                                                 <div className="flex gap-2 ml-4">
                                                   <button
