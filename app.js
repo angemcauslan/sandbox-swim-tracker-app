@@ -1,4 +1,4 @@
-const { useState, useEffect } = React;
+const { useState, useEffect, useRef } = React;
 
 // Lucide React icons as inline SVG components
 const Plus = (props) => (
@@ -82,6 +82,8 @@ const SwimTracker = () => {
   });
   const [generatedComment, setGeneratedComment] = useState('');
   const [copied, setCopied] = useState(false);
+
+  const studentCardRefs = useRef({});
   
   const [newClass, setNewClass] = useState({
     name: '',
@@ -1207,7 +1209,7 @@ const SwimTracker = () => {
                                     const progressPercent = totalSkills > 0 ? Math.round((achievedCount / totalSkills) * 100) : 0;
 
                                     return (
-                                      <div key={student.id} className="bg-slate-50 border border-slate-200 rounded-lg overflow-hidden">
+                                      <div key={student.id} ref={el => studentCardRefs.current[student.id] = el} className="bg-slate-50 border border-slate-200 rounded-lg overflow-hidden">
                                         <div className="p-4">
                                           {editingStudent?.id === student.id ? (
                                             <div>
@@ -1410,7 +1412,19 @@ const SwimTracker = () => {
                                                       ))}
                                                     </div>
                                                   )}
-                                                  <div className="mt-6 pt-5 border-t border-slate-300">
+                                                  <div className="mt-6 pt-5 border-t border-slate-300 flex flex-col gap-3">
+                                                    <button
+                                                      onClick={() => {
+                                                        setExpandedStudent(null);
+                                                        const card = studentCardRefs.current[student.id];
+                                                        if (card) {
+                                                          card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                                        }
+                                                      }}
+                                                      className="w-full px-5 py-3 bg-slate-200 text-slate-700 font-semibold rounded-lg hover:bg-slate-300 transition"
+                                                    >
+                                                      ↑ Collapse Student
+                                                    </button>
                                                     <button
                                                       onClick={() => openReportDialog(student.id)}
                                                       className="w-full px-5 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition shadow-sm hover:shadow-md"
