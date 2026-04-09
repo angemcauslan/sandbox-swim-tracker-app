@@ -1003,6 +1003,15 @@ const SwimTracker = () => {
             <div className="space-y-4">
               {classes.map(classObj => {
                 const classStudents = getStudentsByClass(classObj.id);
+                const classAvgProgress = classStudents.length === 0 ? null : (() => {
+                  const perStudent = classStudents.map(student => {
+                    const skills = skillsByLevel[student.studentLevel] || [];
+                    if (skills.length === 0) return null;
+                    const achieved = skills.filter(sk => student.progress[sk.id] === 'proficient').length;
+                    return (achieved / skills.length) * 100;
+                  }).filter(p => p !== null);
+                  return perStudent.length === 0 ? null : Math.round(perStudent.reduce((a, b) => a + b, 0) / perStudent.length);
+                })();
                 return (
                   <div key={classObj.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
                     <div className="p-5">
@@ -1157,6 +1166,25 @@ const SwimTracker = () => {
                                     {level}
                                   </span>
                                 ))}
+                              </div>
+                              <div className="mt-3 flex items-center gap-4">
+                                <span className="text-xs text-slate-500 font-medium whitespace-nowrap">
+                                  👤 {classStudents.length} student{classStudents.length !== 1 ? 's' : ''}
+                                </span>
+                                {classAvgProgress !== null && (
+                                  <div className="flex items-center gap-2 flex-1">
+                                    <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
+                                      <div
+                                        className="h-full rounded-full transition-all"
+                                        style={{
+                                          width: `${classAvgProgress}%`,
+                                          backgroundColor: classAvgProgress >= 80 ? '#22c55e' : classAvgProgress >= 50 ? '#f59e0b' : '#3b82f6'
+                                        }}
+                                      />
+                                    </div>
+                                    <span className="text-xs font-semibold text-slate-600 whitespace-nowrap">{classAvgProgress}% avg</span>
+                                  </div>
+                                )}
                               </div>
                             </div>
                             <div className="flex gap-2 ml-4">
