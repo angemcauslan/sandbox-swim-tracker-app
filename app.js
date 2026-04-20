@@ -728,9 +728,8 @@ const SwimTracker = () => {
 
     const classStudents = getStudentsByClass(classId);
     const classLevels = classObj.levels || [];
-    const { tier, duration } = getClassTier(classLevels);
-    const isPatrol = tier === 'patrol';
-    const isSwimmer56 = !isPatrol && classLevels.some(l => ['Swimmer 5', 'Swimmer 6'].includes(l));
+    const { duration } = getClassTier(classLevels);
+    const isSwimmer56 = classLevels.some(l => ['Swimmer 5', 'Swimmer 6'].includes(l));
     const isMultiLevel = classLevels.length > 1;
 
     // Build skill score maps per level
@@ -762,19 +761,7 @@ const SwimTracker = () => {
     const selectedByLevel = {};
     classLevels.forEach(level => {
       const scores = levelSkillScores[level] || [];
-      if (isPatrol) {
-        const h2o = scores.filter(s => s.skill.category === 'H2O Proficiency');
-        const fa = scores.filter(s => s.skill.category === 'First Aid');
-        const rr = scores.filter(s => s.skill.category === 'Recognition & Rescue');
-        const newSkills = [...topByType(fa, 'newScore', 1), ...topByType(rr, 'newScore', 1), ...topByType(h2o, 'newScore', 2)].slice(0,3);
-        const usedIds = new Set(newSkills.map(s => s.skill.id));
-        const learnPool = scores.filter(s => !usedIds.has(s.skill.id));
-        const learnSkills = [...topByType(learnPool.filter(s=>s.skill.category==='First Aid'),'learningScore',1), ...topByType(learnPool.filter(s=>s.skill.category==='Recognition & Rescue'),'learningScore',1), ...topByType(learnPool.filter(s=>s.skill.category==='H2O Proficiency'),'learningScore',2)].slice(0,3);
-        learnSkills.forEach(s => usedIds.add(s.skill.id));
-        const pracPool = scores.filter(s => !usedIds.has(s.skill.id));
-        const pracSkills = topN(pracPool, 4);
-        selectedByLevel[level] = { newSkills, learnSkills, pracSkills };
-      } else if (isSwimmer56) {
+      if (isSwimmer56) {
         const newSkills = topByType(scores, 'newScore', 2);
         const usedIds = new Set(newSkills.map(s => s.skill.id));
         const additionalSkills = topN(scores.filter(s => !usedIds.has(s.skill.id)), 2);
@@ -1645,16 +1632,18 @@ const SwimTracker = () => {
                             </div>
                           )}
 
-                          {/* Lesson Plan Button */}
-                          <div className="mt-4 pt-4 border-t border-slate-200">
-                            <button
-                              onClick={() => openLessonPlanDialog(classObj.id)}
-                              className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white text-sm font-semibold rounded-lg hover:bg-emerald-700 transition shadow-sm"
-                            >
-                              <span>📋</span>
-                              <span>Generate Lesson Plan Prompt</span>
-                            </button>
-                          </div>
+                          {/* Lesson Plan Button — not shown for Patrol classes */}
+                          {!classObj.levels.some(l => ['Rookie Patrol', 'Ranger Patrol', 'Star Patrol'].includes(l)) && (
+                            <div className="mt-4 pt-4 border-t border-slate-200">
+                              <button
+                                onClick={() => openLessonPlanDialog(classObj.id)}
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white text-sm font-semibold rounded-lg hover:bg-emerald-700 transition shadow-sm"
+                              >
+                                <span>📋</span>
+                                <span>Generate Lesson Plan Prompt</span>
+                              </button>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
