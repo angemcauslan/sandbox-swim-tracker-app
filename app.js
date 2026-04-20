@@ -867,10 +867,7 @@ const SwimTracker = () => {
     prompt += `- Use game-based activities for younger/beginner levels\n`;
     prompt += `- Weave in Water Smart safety messages where appropriate\n`;
     prompt += `- Activities should progress in difficulty within the lesson\n\n`;
-    prompt += `OUTPUT INSTRUCTIONS:\n`;
-    prompt += `1. Generate the complete lesson plan table.\n`;
-    prompt += `2. After the table, offer to create a downloadable Word (.docx) file of the lesson plan in the same format as the official RLSS Swim for Life lesson plan documents (landscape orientation, blue header row, alternating row shading, columns: Time | Item | Activity | Equipment | Formation).\n`;
-    prompt += `3. If the user asks for the .docx, use your file creation tools to produce it and provide a download link.\n`;
+    prompt += `Generate the complete lesson plan table now.\n`;
 
     setGeneratedLessonPlanPrompt(prompt);
   };
