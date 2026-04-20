@@ -849,359 +849,32 @@ const SwimTracker = () => {
     }
 
     prompt += `\nLESSON PLAN FORMAT REQUIRED:\n`;
-    prompt += `Output a table with columns: Time | Item | Activity | Equipment | Formation\n\n`;
+    prompt += `Output a formatted table with columns: Time | Item | Activity | Equipment | Formation\n\n`;
     prompt += `Rules:\n`;
     prompt += `- First row always: 1 min | [blank] | Welcome and take attendance | Worksheet | Meeting place\n`;
     prompt += `- Last row always: 1 min | Entries and Exits | Climb out — use steps/ramps, assist as needed | Buoyant aid | Edge of pool\n`;
     prompt += `- If last lesson of session: add "Distribute Progress Reports" as final row\n`;
     prompt += `- Total time = ${duration} minutes\n`;
-    prompt += `- Each row = one activity block (3–8 min each, varying)\n`;
+    prompt += `- Each row = one activity block (3–8 min each, varying to fill the duration)\n`;
     prompt += `- "Item" = RLSS skill category and skill name/number\n`;
     prompt += `- "Activity" = 2–4 bullet points: what to demonstrate, cue words, game or progression\n`;
     prompt += `- "Equipment" = comma-separated list (e.g. Buoyant aid, Pool noodles, PFDs, Sinking toys)\n`;
     prompt += `- "Formation" = Circle / Line / Edge of pool / etc.\n`;
     if (isMultiLevel) {
-      prompt += `- For multi-level rows: show both levels working simultaneously, e.g.:\n`;
-      prompt += `  Activity: "${classLevels[0]}: practice front float with noodle\\n${classLevels[1] || ''}: glide from wall, arms streamlined"\n`;
+      prompt += `- For multi-level rows: show both levels working simultaneously in the Activity column, e.g.:\n`;
+      prompt += `  "${classLevels[0]}: practice front float with noodle\\n${classLevels[1] || 'Level 2'}: glide from wall, arms streamlined"\n`;
     }
     prompt += `- Use game-based activities for younger/beginner levels\n`;
     prompt += `- Weave in Water Smart safety messages where appropriate\n`;
     prompt += `- Activities should progress in difficulty within the lesson\n\n`;
-    prompt += `Generate the complete lesson plan table now.\n`;
+    prompt += `OUTPUT INSTRUCTIONS:\n`;
+    prompt += `1. Generate the complete lesson plan table.\n`;
+    prompt += `2. After the table, offer to create a downloadable Word (.docx) file of the lesson plan in the same format as the official RLSS Swim for Life lesson plan documents (landscape orientation, blue header row, alternating row shading, columns: Time | Item | Activity | Equipment | Formation).\n`;
+    prompt += `3. If the user asks for the .docx, use your file creation tools to produce it and provide a download link.\n`;
 
     setGeneratedLessonPlanPrompt(prompt);
   };
 
-  const buildLessonData = (classId) => {
-    // Shared logic to build skill selections and lesson rows from class data
-    const classObj = classes.find(c => c.id === classId);
-    if (!classObj) return null;
-
-    const classStudents = getStudentsByClass(classId);
-    const classLevels = classObj.levels || [];
-    const { tier, duration } = getClassTier(classLevels);
-    const isPatrol = tier === 'patrol';
-    const isSwimmer56 = !isPatrol && classLevels.some(function(l) { return ['Swimmer 5', 'Swimmer 6'].includes(l); });
-    const isMultiLevel = classLevels.length > 1;
-
-    const levelSkillScores = {};
-    classLevels.forEach(function(level) {
-      const levelStudents = classStudents.filter(function(s) { return s.studentLevel === level; });
-      const skills = skillsByLevel[level] || [];
-      const skillScores = skills.map(function(skill) {
-        let newScore = 0, learningScore = 0, practicingScore = 0;
-        levelStudents.forEach(function(student) {
-          const status = student.progress[skill.id] || 'not-started';
-          if (status === 'not-started') newScore += 3;
-          else if (status === 'learning') learningScore += 2;
-          else if (status === 'practicing') practicingScore += 1;
-        });
-        return {
-          skill: skill, newScore: newScore, learningScore: learningScore, practicingScore: practicingScore,
-          totalScore: newScore + learningScore + practicingScore,
-          notes: levelStudents.map(function(s) { return s.progress[skill.id + '_comment'] || ''; }).filter(Boolean)
-        };
-      }).filter(function(s) { return s.totalScore > 0; });
-      levelSkillScores[level] = skillScores;
-    });
-
-    const topN = function(arr, n) { return arr.slice().sort(function(a,b){return b.totalScore-a.totalScore;}).slice(0,n); };
-    const topByType = function(arr, scoreKey, n) { return arr.filter(function(s){return s[scoreKey]>0;}).sort(function(a,b){return b[scoreKey]-a[scoreKey];}).slice(0,n); };
-
-    const selectedByLevel = {};
-    classLevels.forEach(function(level) {
-      const scores = levelSkillScores[level] || [];
-      if (isPatrol) {
-        const h2o = scores.filter(function(s){return s.skill.category==='H2O Proficiency';});
-        const fa  = scores.filter(function(s){return s.skill.category==='First Aid';});
-        const rr  = scores.filter(function(s){return s.skill.category==='Recognition & Rescue';});
-        const newSkills = topByType(fa,'newScore',1).concat(topByType(rr,'newScore',1)).concat(topByType(h2o,'newScore',2)).slice(0,3);
-        const usedIds = {};
-        newSkills.forEach(function(s){usedIds[s.skill.id]=true;});
-        const learnPool = scores.filter(function(s){return !usedIds[s.skill.id];});
-        const learnSkills = topByType(learnPool.filter(function(s){return s.skill.category==='First Aid';}), 'learningScore',1)
-          .concat(topByType(learnPool.filter(function(s){return s.skill.category==='Recognition & Rescue';}), 'learningScore',1))
-          .concat(topByType(learnPool.filter(function(s){return s.skill.category==='H2O Proficiency';}), 'learningScore',2))
-          .slice(0,3);
-        learnSkills.forEach(function(s){usedIds[s.skill.id]=true;});
-        const pracPool = scores.filter(function(s){return !usedIds[s.skill.id];});
-        const pracSkills = topN(pracPool, 4);
-        selectedByLevel[level] = { newSkills: newSkills, learnSkills: learnSkills, pracSkills: pracSkills };
-      } else if (isSwimmer56) {
-        const newSkills = topByType(scores,'newScore',2);
-        const usedIds = {};
-        newSkills.forEach(function(s){usedIds[s.skill.id]=true;});
-        const rem = scores.filter(function(s){return !usedIds[s.skill.id];});
-        const additionalSkills = topN(rem,2);
-        selectedByLevel[level] = {
-          newSkills: newSkills,
-          learnSkills: additionalSkills.filter(function(s){return s.learningScore>0;}),
-          pracSkills: additionalSkills.filter(function(s){return s.practicingScore>0;})
-        };
-      } else {
-        const newSkills = topByType(scores,'newScore',2);
-        const usedIds = {};
-        newSkills.forEach(function(s){usedIds[s.skill.id]=true;});
-        const rem = scores.filter(function(s){return !usedIds[s.skill.id];});
-        const learnSkills = topByType(rem,'learningScore',2);
-        learnSkills.forEach(function(s){usedIds[s.skill.id]=true;});
-        const pracSkills = topByType(scores.filter(function(s){return !usedIds[s.skill.id];}),'practicingScore',2);
-        selectedByLevel[level] = { newSkills: newSkills, learnSkills: learnSkills, pracSkills: pracSkills };
-      }
-    });
-
-    // Build lesson activity rows
-    // For multi-level: pair activities from each level into the same time block
-    // so the class stays in the same area of the pool simultaneously.
-    const rows = [];
-    rows.push({ time: 1, item: '', activity: 'Welcome and take attendance', equipment: 'Worksheet', formation: 'Meeting place' });
-    rows.push({ time: 2, item: 'Entries and Exits', activity: 'Entry into the water\n• Use steps, ramps, or pool edge\n• Assist as needed', equipment: 'Buoyant aid', formation: 'Edge of pool' });
-
-    if (isMultiLevel && classLevels.length >= 2) {
-      // Pair each level's skills into the same time block
-      const byLevel = {};
-      classLevels.forEach(function(l) {
-        const s = selectedByLevel[l] || {};
-        const arr = [];
-        (s.newSkills||[]).forEach(function(sk){arr.push({skill:sk.skill,label:'NEW',notes:sk.notes,level:l});});
-        (s.learnSkills||[]).forEach(function(sk){arr.push({skill:sk.skill,label:'LEARNING',notes:sk.notes,level:l});});
-        (s.pracSkills||[]).forEach(function(sk){arr.push({skill:sk.skill,label:'PRACTICE',notes:sk.notes,level:l});});
-        byLevel[l] = arr;
-      });
-      const maxLen = Math.max.apply(null, classLevels.map(function(l){return byLevel[l].length;}));
-      for (let i = 0; i < maxLen; i++) {
-        const parts = [];
-        const categories = [];
-        classLevels.forEach(function(l) {
-          const row = byLevel[l][i];
-          if (!row) return;
-          parts.push(l + ' [' + row.label + ']: ' + row.skill.name + (row.notes.length ? ' — ' + row.notes[0] : ''));
-          if (categories.indexOf(row.skill.category) === -1) categories.push(row.skill.category);
-        });
-        rows.push({
-          time: 5,
-          item: categories.join(' / '),
-          activity: parts.join('\n'),
-          equipment: 'Buoyant aid',
-          formation: 'Line'
-        });
-      }
-    } else {
-      classLevels.forEach(function(level) {
-        const s = selectedByLevel[level] || {};
-        const allSkills = (s.newSkills||[]).map(function(sk){return{skill:sk.skill,label:'NEW',notes:sk.notes};})
-          .concat((s.learnSkills||[]).map(function(sk){return{skill:sk.skill,label:'LEARNING',notes:sk.notes};}))
-          .concat((s.pracSkills||[]).map(function(sk){return{skill:sk.skill,label:'PRACTICE',notes:sk.notes};}));
-        allSkills.forEach(function(r) {
-          rows.push({
-            time: 5,
-            item: r.skill.category,
-            activity: '[' + r.label + '] ' + r.skill.name + (r.notes.length ? '\n• Note: ' + r.notes[0] : '') + '\n• Demonstrate and practice\n• Provide individual feedback',
-            equipment: 'Buoyant aid',
-            formation: 'Line'
-          });
-        });
-      });
-    }
-
-    rows.push({ time: 1, item: 'Entries and Exits', activity: 'Climb out\n• Use steps, ramps if available\n• Assist as needed', equipment: 'Buoyant aid', formation: 'Edge of pool' });
-
-    const studentNotes = classStudents
-      .filter(function(s) { return s.generalComments && s.generalComments.trim(); })
-      .map(function(s) { return s.name + ' (' + s.studentLevel + '): ' + s.generalComments.trim(); });
-
-    return { classObj: classObj, classStudents: classStudents, classLevels: classLevels,
-      duration: duration, isMultiLevel: isMultiLevel, rows: rows,
-      selectedByLevel: selectedByLevel, studentNotes: studentNotes };
-  };
-
-  const generateAndDownloadDocx = function(classId) {
-    const data = buildLessonData(classId);
-    if (!data) return;
-    const { classObj, classStudents, classLevels, duration, rows, selectedByLevel, studentNotes } = data;
-
-    // Load docx from CDN dynamically if not already loaded
-    const doGenerate = function() {
-      const docx = window.docx;
-      if (!docx) { alert('docx library not loaded. Please check your internet connection and try again.'); return; }
-
-      const Document = docx.Document, Packer = docx.Packer, Paragraph = docx.Paragraph,
-        TextRun = docx.TextRun, Table = docx.Table, TableRow = docx.TableRow,
-        TableCell = docx.TableCell, AlignmentType = docx.AlignmentType,
-        BorderStyle = docx.BorderStyle, WidthType = docx.WidthType,
-        ShadingType = docx.ShadingType, VerticalAlign = docx.VerticalAlign,
-        HeadingLevel = docx.HeadingLevel, LevelFormat = docx.LevelFormat;
-
-      const border = { style: BorderStyle.SINGLE, size: 4, color: '2E86AB' };
-      const cellBorders = { top: border, bottom: border, left: border, right: border };
-      const cellMargins = { top: 80, bottom: 80, left: 120, right: 120 };
-      // Landscape US Letter: width=15840, height=12240; 0.75" margins => content width = 15840-2160 = 13680
-      const colWidths = [900, 2200, 6080, 2300, 2200]; // sum = 13680
-
-      const headerShading = { fill: '2E86AB', type: ShadingType.CLEAR };
-      const altShading    = { fill: 'EAF4FB', type: ShadingType.CLEAR };
-
-      const makeCell = function(text, isHeader, shade, colWidth) {
-        const lines = (text || '').split('\n');
-        const children = lines.map(function(line, idx) {
-          const isBullet = line.trim().charAt(0) === '\u2022';
-          return new Paragraph({
-            spacing: { before: idx === 0 ? 0 : 40, after: 0 },
-            indent: isBullet ? { left: 180, hanging: 180 } : {},
-            children: [new TextRun({
-              text: line,
-              bold: isHeader,
-              color: isHeader ? 'FFFFFF' : '1A1A2E',
-              size: isHeader ? 20 : 18,
-              font: 'Arial'
-            })]
-          });
-        });
-        return new TableCell({
-          borders: cellBorders,
-          width: { size: colWidth, type: WidthType.DXA },
-          shading: shade || (isHeader ? headerShading : { fill: 'FFFFFF', type: ShadingType.CLEAR }),
-          margins: cellMargins,
-          verticalAlign: VerticalAlign.TOP,
-          children: children
-        });
-      };
-
-      const tableRows = [
-        new TableRow({
-          tableHeader: true,
-          children: [
-            makeCell('Time', true, null, colWidths[0]),
-            makeCell('Item', true, null, colWidths[1]),
-            makeCell('Activity', true, null, colWidths[2]),
-            makeCell('Equipment', true, null, colWidths[3]),
-            makeCell('Formation', true, null, colWidths[4])
-          ]
-        })
-      ].concat(rows.map(function(row, idx) {
-        const shade = idx % 2 === 1 ? altShading : null;
-        return new TableRow({
-          children: [
-            makeCell(row.time + ' min.', false, shade, colWidths[0]),
-            makeCell(row.item, false, shade, colWidths[1]),
-            makeCell(row.activity, false, shade, colWidths[2]),
-            makeCell(row.equipment, false, shade, colWidths[3]),
-            makeCell(row.formation, false, shade, colWidths[4])
-          ]
-        });
-      }));
-
-      const lessonTable = new Table({
-        width: { size: 13680, type: WidthType.DXA },
-        columnWidths: colWidths,
-        rows: tableRows
-      });
-
-      const totalTime = rows.reduce(function(s,r){return s+r.time;}, 0);
-
-      const docChildren = [
-        new Paragraph({
-          heading: HeadingLevel.HEADING_1,
-          children: [new TextRun({ text: classLevels.join(' / ') + ' \u2014 Lesson Plan', bold: true, size: 36, font: 'Arial', color: '1A1A2E' })]
-        }),
-        new Paragraph({
-          spacing: { after: 120 },
-          children: [new TextRun({ text: classObj.name + '  \u2022  ' + classObj.day + ' at ' + classObj.time + '  \u2022  ' + classObj.season + ' ' + classObj.year + '  \u2022  ' + duration + ' min lesson  \u2022  ' + classStudents.length + ' student' + (classStudents.length !== 1 ? 's' : '') + '  \u2022  Planned: ' + totalTime + ' min', size: 20, font: 'Arial', color: '555555' })]
-        }),
-        new Paragraph({ children: [new TextRun({ text: '' })], spacing: { after: 160 } }),
-        lessonTable,
-        new Paragraph({ children: [new TextRun({ text: '' })], spacing: { before: 400 } }),
-        new Paragraph({
-          children: [new TextRun({ text: 'Skill Priorities for This Lesson', bold: true, size: 24, font: 'Arial', color: '2E86AB' })],
-          spacing: { before: 200, after: 120 }
-        })
-      ];
-
-      classLevels.forEach(function(level) {
-        const sel = selectedByLevel[level] || {};
-        const levelCount = classStudents.filter(function(s){return s.studentLevel===level;}).length;
-        docChildren.push(new Paragraph({
-          children: [new TextRun({ text: level + ' (' + levelCount + ' student' + (levelCount!==1?'s':'') + ')', bold: true, size: 22, font: 'Arial', color: '1A1A2E' })],
-          spacing: { before: 160, after: 80 }
-        }));
-        const addGroup = function(skills, label, color) {
-          if (!skills || !skills.length) return;
-          docChildren.push(new Paragraph({
-            children: [new TextRun({ text: '  ' + label + ':', bold: true, size: 20, font: 'Arial', color: color })],
-            spacing: { before: 60, after: 40 }
-          }));
-          skills.forEach(function(s) {
-            docChildren.push(new Paragraph({
-              numbering: { reference: 'bullets', level: 0 },
-              children: [
-                new TextRun({ text: s.skill.name, size: 19, font: 'Arial' }),
-                new TextRun({ text: s.notes.length ? '  \u2014  ' + s.notes[0] : '', size: 18, font: 'Arial', color: '666666', italics: true })
-              ],
-              spacing: { before: 20, after: 20 }
-            }));
-          });
-        };
-        addGroup(sel.newSkills, 'Introduce (New)', '2E7D32');
-        addGroup(sel.learnSkills, 'Finish Learning', 'E65100');
-        addGroup(sel.pracSkills, 'Practice to Proficient', '1565C0');
-      });
-
-      if (studentNotes.length) {
-        docChildren.push(new Paragraph({
-          children: [new TextRun({ text: 'Student Notes', bold: true, size: 24, font: 'Arial', color: '2E86AB' })],
-          spacing: { before: 300, after: 120 }
-        }));
-        studentNotes.forEach(function(note) {
-          docChildren.push(new Paragraph({
-            numbering: { reference: 'bullets', level: 0 },
-            children: [new TextRun({ text: note, size: 19, font: 'Arial', italics: true })],
-            spacing: { before: 20, after: 20 }
-          }));
-        });
-      }
-
-      const doc = new Document({
-        numbering: {
-          config: [{
-            reference: 'bullets',
-            levels: [{ level: 0, format: LevelFormat.BULLET, text: '\u2022', alignment: AlignmentType.LEFT,
-              style: { paragraph: { indent: { left: 540, hanging: 360 } } } }]
-          }]
-        },
-        styles: { default: { document: { run: { font: 'Arial', size: 20 } } } },
-        sections: [{
-          properties: {
-            page: {
-              size: { width: 15840, height: 12240 },
-              margin: { top: 1080, right: 1080, bottom: 1080, left: 1080 }
-            }
-          },
-          children: docChildren
-        }]
-      });
-
-      Packer.toBuffer(doc).then(function(buffer) {
-        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        const safeName = classObj.name.replace(/[^a-zA-Z0-9]/g, '_');
-        link.download = 'LessonPlan_' + safeName + '_' + classLevels[0].replace(/\s/g,'') + '_' + new Date().toISOString().split('T')[0] + '.docx';
-        link.click();
-        URL.revokeObjectURL(url);
-      });
-    };
-
-    if (window.docx) {
-      doGenerate();
-    } else {
-      const script = document.createElement('script');
-      script.src = 'https://unpkg.com/docx@8.5.0/build/index.js';
-      script.onload = function() { doGenerate(); };
-      script.onerror = function() { alert('Could not load the docx library. Please check your internet connection.'); };
-      document.head.appendChild(script);
-    }
-  };
 
 
   const exportData = () => {
@@ -1976,20 +1649,13 @@ const SwimTracker = () => {
                           )}
 
                           {/* Lesson Plan Button */}
-                          <div className="mt-4 pt-4 border-t border-slate-200 flex items-center gap-3">
-                            <button
-                              onClick={() => generateAndDownloadDocx(classObj.id)}
-                              className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white text-sm font-semibold rounded-lg hover:bg-emerald-700 transition shadow-sm"
-                            >
-                              <span>📄</span>
-                              <span>Download Lesson Plan (.docx)</span>
-                            </button>
+                          <div className="mt-4 pt-4 border-t border-slate-200">
                             <button
                               onClick={() => openLessonPlanDialog(classObj.id)}
-                              className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-200 transition"
+                              className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white text-sm font-semibold rounded-lg hover:bg-emerald-700 transition shadow-sm"
                             >
                               <span>📋</span>
-                              <span>Copy AI Prompt</span>
+                              <span>Generate Lesson Plan Prompt</span>
                             </button>
                           </div>
                         </div>
